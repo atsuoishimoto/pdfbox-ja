@@ -20,11 +20,14 @@ import org.apache.fontbox.afm.AFMParser;
 import org.apache.fontbox.afm.FontMetric;
 import org.apache.fontbox.cmap.CMapParser;
 import org.apache.fontbox.cmap.CMap;
+import org.apache.pdfbox.encoding.conversion.EncodingConversionManager;
+import org.apache.pdfbox.encoding.conversion.EncodingConverter;
 
 import org.apache.pdfbox.encoding.AFMEncoding;
 import org.apache.pdfbox.encoding.DictionaryEncoding;
 import org.apache.pdfbox.encoding.Encoding;
 import org.apache.pdfbox.encoding.EncodingManager;
+import org.apache.pdfbox.encoding.conversion.CMapSubstitution;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
@@ -379,6 +382,7 @@ public abstract class PDFont implements COSObjectable
                         if( cmap == null )
                         {
                             String cmapName = encodingName.getName();
+                            cmapName = CMapSubstitution.substituteCMap( cmapName );
                             String resourceRoot = "Resources/cmap/";
                             String resourceName = resourceRoot + cmapName;
                             parseCmap( resourceRoot, ResourceLoader.loadResource( resourceName ), encodingName );
@@ -427,6 +431,19 @@ public abstract class PDFont implements COSObjectable
         {
             retval = cmap.lookup( c, offset, length );
         }
+        COSBase encoding_COS = font.getDictionaryObject(COSName.ENCODING);
+        if ( encoding_COS instanceof COSName ) {
+            EncodingConverter converter = EncodingConversionManager.getConverter(((COSName)encoding_COS).getName());
+            if ( converter != null ) {
+                if ( retval != null )
+                    retval = converter.convertString(retval);
+                else
+                    retval = converter.convertBytes(c, offset, length, cmap);
+                return retval;
+            }
+        }
+
+        
         //if we havn't found a value yet and
         //we are still on the first byte and
         //there is no cmap or the cmap does not have 2 byte mappings then try to encode
