@@ -146,7 +146,7 @@ public abstract class PDCIDFont extends PDFont
     public float getFontWidth( byte[] c, int offset, int length ) throws IOException
     {
 
-        float retval = 0.0f;
+    	float retval = getDefaultWidth();
         int code = getCodeFromArray( c, offset, length );
 
         Float widthFloat = (Float)widthCache.get( new Integer( code ) );
