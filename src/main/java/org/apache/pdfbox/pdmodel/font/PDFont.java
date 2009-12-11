@@ -381,35 +381,32 @@ public abstract class PDFont implements COSObjectable
                         cmap = (CMap)cmapObjects.get( encodingName );
                         if( cmap == null )
                         {
-                            COSArray descendantFontArray =
-                                (COSArray)font.getDictionaryObject( COSName.DESCENDANT_FONTS );
-                            if (descendantFontArray != null) {
-                                COSDictionary descendantFontDictionary = (COSDictionary)descendantFontArray.getObject( 0 );
-                                PDFont descendentFont = PDFontFactory.createFont( descendantFontDictionary );
-                                COSDictionary cidsysteminfo = (COSDictionary)descendentFont.font.getDictionaryObject(COSName.CIDSYSTEMINFO);
-                                if (cidsysteminfo != null) {
-                                    String ordering = cidsysteminfo.getString(COSName.ORDERING);
-                                    String registry = cidsysteminfo.getString(COSName.REGISTRY);
-                                    
-                                    String resourceRoot = "Resources/cmap/";
-                                    String resourceName = resourceRoot + registry + "-" + ordering+"-UCS2";
-                                    parseCmap( resourceRoot, ResourceLoader.loadResource( resourceName ), encodingName );
-                                    if (cmap == null) {
-    	                                throw new IOException( "Error: Could not find predefined " +
-    	    	                                "CMAP file for '" + resourceName + "'" );
+                            String cmapName = encodingName.getName();
+                            if (encodingName.getName().equals( COSName.IDENTITY_H.getName() )) {
+                                COSArray descendantFontArray =
+                                    (COSArray)font.getDictionaryObject( COSName.DESCENDANT_FONTS );
+                                if (descendantFontArray != null) {
+                                    COSDictionary descendantFontDictionary = (COSDictionary)descendantFontArray.getObject( 0 );
+                                    PDFont descendentFont = PDFontFactory.createFont( descendantFontDictionary );
+                                    COSDictionary cidsysteminfo = (COSDictionary)descendentFont.font.getDictionaryObject(COSName.CIDSYSTEMINFO);
+                                    if (cidsysteminfo != null) {
+                                        String ordering = cidsysteminfo.getString(COSName.ORDERING);
+                                        String registry = cidsysteminfo.getString(COSName.REGISTRY);
+                                        
+                                        cmapName = registry + "-" + ordering+"-UCS2";
                                     }
                                 }
+                            } else {
+                            	cmapName = CMapSubstitution.substituteCMap( cmapName );
                             }
-                            else {
-	                            String cmapName = encodingName.getName();
-	                            String resourceRoot = "Resources/cmap/";
-	                            String resourceName = resourceRoot + cmapName;
-	                            parseCmap( resourceRoot, ResourceLoader.loadResource( resourceName ), encodingName );
-	                            if( cmap == null && !encodingName.getName().equals( COSName.IDENTITY_H.getName() ) )
-	                            {
-	                                throw new IOException( "Error: Could not find predefined " +
-	                                "CMAP file for '" + encodingName.getName() + "'" );
-	                            }
+                            
+                            String resourceRoot = "Resources/cmap/";
+                            String resourceName = resourceRoot + cmapName;
+                            parseCmap( resourceRoot, ResourceLoader.loadResource( resourceName ), encodingName );
+                            if( cmap == null && !encodingName.getName().equals( COSName.IDENTITY_H.getName() ) )
+                            {
+                                throw new IOException( "Error: Could not find predefined " +
+                                "CMAP file for '" + encodingName.getName() + "'" );
                             }
                         }
                     }
@@ -452,7 +449,6 @@ public abstract class PDFont implements COSObjectable
             retval = cmap.lookup( c, offset, length );
         }
         
-/*        
         COSBase encoding_COS = font.getDictionaryObject(COSName.ENCODING);
         if ( encoding_COS instanceof COSName ) {
             EncodingConverter converter = EncodingConversionManager.getConverter(((COSName)encoding_COS).getName());
@@ -464,7 +460,6 @@ public abstract class PDFont implements COSObjectable
                 return retval;
             }
         }
-*/
         
         //if we havn't found a value yet and
         //we are still on the first byte and

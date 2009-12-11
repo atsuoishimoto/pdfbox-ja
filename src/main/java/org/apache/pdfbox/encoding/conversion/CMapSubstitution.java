@@ -63,7 +63,7 @@ public class CMapSubstitution
         cmapSubstitutions.put( "90pv-RKSJ-H", "90pv-RKSJ-UCS2");
         cmapSubstitutions.put( "UniJIS-UCS2-HW-H", "UniJIS-UCS2-H" );
         cmapSubstitutions.put( "Adobe-Japan1-4", "Adobe-Japan1-UCS2");
-        cmapSubstitutions.put( "Identity-H", "Adobe-Japan1-UCS2");
+//        cmapSubstitutions.put( "Identity-H", "Adobe-Japan1-UCS2");
 
     }
 
